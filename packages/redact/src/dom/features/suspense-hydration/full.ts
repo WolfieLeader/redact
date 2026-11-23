@@ -129,7 +129,10 @@ export function hydrateSuspenseBoundary(fiber: Fiber, props: any, boundary: [
                 });
                 throw e;
             }
-            else recoverBoundaryHydration(fiber, props.children, parent, startMark, endMark);
+            // Client-render through renderSuspense, as for a `$!` boundary: a
+            // plain reconcile has no suspend handler, so a child suspending
+            // there escaped hydration as a RenderSuspenseCapture.
+            else recoverBoundaryHydration(fiber, props.children, parent, startMark, endMark, true);
         }
         finally {
             clearHydrationCursor(fiber);
