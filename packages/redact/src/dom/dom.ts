@@ -104,6 +104,13 @@ function setStyle(el: HTMLElement, next: any, prev: any): void {
         }
     }
 }
+// React ignores events that a commit's own DOM writes dispatch, such as the
+// blur Chrome fires on a focused element just before removing it.
+let mutationDepth = 0;
+export function runMutations(work: () => void): void {
+    mutationDepth++;
+    try { work(); } finally { mutationDepth--; }
+}
 function setEventHandler(el: Element, name: string, next: any): void {
     // Only function handlers are accepted. Reject strings/objects/etc — the
     // legacy `onclick="..."` HTML attribute (string handler) is a known XSS
@@ -132,6 +139,8 @@ function setEventHandler(el: Element, name: string, next: any): void {
         return;
     if (!existing) {
         const entry = ((e: Event) => {
+            if (mutationDepth)
+                return;
             if (events.length > 1) {
                 const value = (el as HTMLInputElement).value;
                 if (e.type === 'change' && (el as any).__v === value)

@@ -1,6 +1,6 @@
 import { walkRetained } from './walk';
 import { isFunction } from '../core/functions';
-import { setProp } from './dom';
+import { runMutations, setProp } from './dom';
 export interface CommitPlan {
     q: any[][]; // Before-mutation, mutation, effect, rollback, failure, and placement queues.
     c: number[][]; // Queue lengths saved at each rollback checkpoint.
@@ -94,15 +94,17 @@ export function commitMutation(plan: CommitPlan): void {
     const previous = activeCommit;
     activeCommit = plan;
     try {
-        const mutations = plan.q[1]!;
-        for (let index = 0; index < mutations.length; index++) {
-            const work = mutations[index];
-            if (isFunction(work))
-                work();
-            else
-                mutations[++index].data = work;
-        }
-        placementHook?.(plan.q[5]!);
+        runMutations(() => {
+            const mutations = plan.q[1]!;
+            for (let index = 0; index < mutations.length; index++) {
+                const work = mutations[index];
+                if (isFunction(work))
+                    work();
+                else
+                    mutations[++index].data = work;
+            }
+            placementHook?.(plan.q[5]!);
+        });
         for (const work of plan.q[2]!)
             work();
     }
