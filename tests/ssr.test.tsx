@@ -75,6 +75,13 @@ describe('renderToString', () => {
     expect(html).toBe('<div style="color:red;margin-top:4px;"></div>')
   })
 
+  it('omits the style attribute when no style property renders', () => {
+    expect(renderToString(<div style={{}} />)).toBe('<div></div>')
+    expect(renderToString(<div style={{ color: undefined, '--gap': '' }} />)).toBe('<div></div>')
+    expect(renderToString(<div style={{ color: true, width: false }} />)).toBe('<div></div>')
+    expect(renderToString(<div style={{ color: 'red', width: '' }} />)).toBe('<div style="color:red;"></div>')
+  })
+
   it('skips event handlers', () => {
     expect(renderToString(<button onClick={() => {}}>x</button>)).toBe('<button>x</button>')
   })

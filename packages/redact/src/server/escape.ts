@@ -78,7 +78,8 @@ export function attrToHtml(name: string, value: unknown, isSvg = false): string 
   }
 
   if (name === 'style' && typeof value === 'object' && value !== null) {
-    return ` style="${escapeAttr(styleToString(value as Record<string, unknown>))}"`
+    const css = styleToString(value as Record<string, unknown>)
+    return css && ` style="${escapeAttr(css)}"`
   }
 
   return ` ${htmlName}="${escapeAttr(String(value))}"`
@@ -90,7 +91,7 @@ function styleToString(style: Record<string, unknown>): string {
   let out = ''
   for (const key in style) {
     const v = style[key]
-    if (v == null || v === false) continue
+    if (v == null || v === true || v === false || v === '') continue
     const kebab = key.startsWith('--')
       ? key
       : key.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase()).replace(/^ms-/, '-ms-')
